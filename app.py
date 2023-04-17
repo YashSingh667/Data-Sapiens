@@ -11,11 +11,13 @@
 
 # if __name__ == "__main__":
 #     app.run(debug = True, port = 8000)
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for
 import psycopg2
+
 
 app = Flask(__name__,template_folder='FRONT_END/')
 app.config['DEBUG'] = True
+app.secret_key = "mysecretkey"
 
 # Configure PostgreSQL database connection
 conn = psycopg2.connect(
@@ -28,13 +30,37 @@ cursor = conn.cursor()
 
 # Create table for user information if it doesn't exist
 cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                  (id SERIAL PRIMARY KEY, 
+                  (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), 
                   name TEXT NOT NULL, 
                   dob DATE NOT NULL,
                   email TEXT NOT NULL, 
                   username TEXT NOT NULL UNIQUE, 
-                  password TEXT NOT NULL);''')
+                  password TEXT NOT NULL,
+                  role VARCHAR(255) NOT NULL DEFAULT 'user');''')
 conn.commit()
+
+
+
+def authenticate(username, password):
+    # conn = psycopg2.connect(database="mydatabase", user="myuser", password="mypassword", host="localhost", port="5432")
+    # cur = conn.cursor()
+    cursor.execute("SELECT id, username, role FROM users WHERE username=%s AND password=%s", (username, password))
+    row = cursor.fetchone()
+    # cursor.close()
+    # conn.close()
+    if row is not None:
+        session["user_id"] = row[0]
+        session["username"] = row[1]
+        session["role"] = row[2]
+        return True
+    else:
+        return False
+
+def authorize(role):
+    if "role" in session and session["role"] == role:
+        return True
+    else:
+        return False
 
 @app.route('/')
 def index():
@@ -58,26 +84,47 @@ def register():
         return render_template('register.html')
 
 # Login endpoint
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login")
 def login():
-    if request.method == 'POST':
-        # Get form data
-        username = request.form['login-username']
-        password = request.form['login-password']
-        # Check if user exists in database
-        cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s;", (username, password))
-        user = cursor.fetchone()
-        if user:
-            return redirect(url_for('dashboard'))
-        else:
-            return render_template('login.html', error="Invalid username or password")
-    else:
-        return render_template('login.html')
+    return render_template("login.html")
 
-# Dashboard endpoint
-@app.route('/dashboard')
+@app.route('/login', methods=['GET', 'POST'])
+def do_login():
+    username = request.form["login-username"]
+    password = request.form["login-password"]
+    if authenticate(username, password):
+        return redirect(url_for("dashboard"))
+    else:
+        return render_template("login.html", error="Invalid username or password")
+
+
+
+
+@app.route("/dashboard")
 def dashboard():
-    return render_template('dashboard.html')
+    if "user_id" in session and authorize("user"):
+        user_id = session["user_id"]
+        # conn = psycopg2.connect(database="mydatabase", user="myuser", password="mypassword", host="localhost", port="5432")
+        # cur = conn.cursor()
+        cursor.execute("SELECT username, email FROM users WHERE id=%s", (user_id,))
+        row = cursor.fetchone()
+        # cursor.close()
+        # conn.close()
+        if row is not None:
+            return render_template("dashboard.html", username=row[0], email=row[1])
+    else:
+        return redirect(url_for("login"))
+
+@app.route("/logout")
+# def logout():
+#     session.pop("user_id", None)
+#     session.pop("username", None)
+#     session.pop("role", None)
+#     return redirect(url_for("home"))
+
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run()
