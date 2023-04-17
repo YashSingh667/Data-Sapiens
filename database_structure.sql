@@ -22,7 +22,7 @@ CREATE TABLE users (
     customerID varchar(50) NOT NULL,
     u_password varchar(50) NOT NULL,
     brokerID varchar(50) NOT NULL,
-    usersname varchar(50) NOT NULL,
+    username varchar(50) NOT NULL,
     email varchar(50) NOT NULL,
     dob DATE NOT NULL,
     fullname varchar(50) NOT NULL,
@@ -47,10 +47,9 @@ CREATE TABLE BrokerT (
 
 DROP TABLE IF EXISTS company;
 CREATE TABLE company (
-    Unnamed: 0 int(50) NOT NULL,
     Stock_name varchar(50) NOT NULL,
     Exchange_name varchar(50) NOT NULL,
-    Date DATE NOT NULL,
+    cdate DATE NOT NULL,
     High FLOAT DEFAULT NULL,
     Low FLOAT DEFAULT NULL,
     Open FLOAT DEFAULT NULL,
