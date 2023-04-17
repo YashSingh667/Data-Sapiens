@@ -26,6 +26,7 @@ CREATE TABLE users (
     email varchar(50) NOT NULL,
     dob DATE NOT NULL,
     fullname varchar(50) NOT NULL,
+    wallet FLOAT DEFAULT NULL,
     PRIMARY KEY (customerID),
     CONSTRAINT fk_brokerID_users
     FOREIGN KEY (brokerID)
@@ -51,6 +52,8 @@ CREATE TABLE company (
     cdate DATE NOT NULL,
     highprice FLOAT DEFAULT NULL,
     lowprice FLOAT DEFAULT NULL,
+    openprice FLOAT DEFAULT NULL,
+    closeprice FLOAT DEFAULT NULL,
     PRIMARY KEY (companyID, exchangename, cdate)
 );
 
