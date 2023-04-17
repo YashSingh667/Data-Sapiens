@@ -36,6 +36,10 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users
                   password TEXT NOT NULL);''')
 conn.commit()
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 # Register endpoint
 @app.route('/register', methods=['GET', 'POST'])
 def register():
