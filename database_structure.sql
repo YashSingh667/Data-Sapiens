@@ -47,29 +47,30 @@ CREATE TABLE BrokerT (
 
 DROP TABLE IF EXISTS company;
 CREATE TABLE company (
-    companyID varchar(50) NOT NULL,
-    exchangename varchar(50) NOT NULL,
-    cdate DATE NOT NULL,
-    highprice FLOAT DEFAULT NULL,
-    lowprice FLOAT DEFAULT NULL,
-    openprice FLOAT DEFAULT NULL,
-    closeprice FLOAT DEFAULT NULL,
-    PRIMARY KEY (companyID, exchangename, cdate)
+    Unnamed: 0 int(50) NOT NULL,
+    Stock_name varchar(50) NOT NULL,
+    Exchange_name varchar(50) NOT NULL,
+    Date DATE NOT NULL,
+    High FLOAT DEFAULT NULL,
+    Low FLOAT DEFAULT NULL,
+    Open FLOAT DEFAULT NULL,
+    Close FLOAT DEFAULT NULL,
+    PRIMARY KEY (Stock_name, Exchange_name, Date)
 );
 
 
 
 DROP TABLE IF EXISTS stockexchange;
 CREATE TABLE stockexchange (
-    exchangename varchar(50) NOT NULL,
+    Exchange_name varchar(50) NOT NULL,
     exchangebrokerID varchar(50) NOT NULL,
     PRIMARY KEY(exchangebrokerID),
     CONSTRAINT fk_exchangebrokerID_stockexchange
     FOREIGN KEY (exchangebrokerID)
     REFERENCES BrokerT(exchangebrokerID)
     -- CONSTRAINT fk_exchangename_company
-    -- FOREIGN KEY (exchangename)
-    -- REFERENCES company(exchangename)
+    -- FOREIGN KEY (Exchange_name)
+    -- REFERENCES company(Exchange_name)
 
 );
 
@@ -82,7 +83,7 @@ CREATE TABLE stockexchange (
 DROP TABLE IF EXISTS Orderbook;
 CREATE TABLE Orderbook (
     transactionID varchar(50) NOT NULL,
-    companyID varchar(50) NOT NULL,
+    Stock_name varchar(50) NOT NULL,
     customerID varchar(50) NOT NULL,
     exchangebrokerID varchar(50) NOT NULL,
     stockvolume int NOT NULL,
@@ -91,9 +92,9 @@ CREATE TABLE Orderbook (
     CONSTRAINT fk_transactionID_orderbook
     FOREIGN KEY (transactionID)
     REFERENCES Transactions(transactionID),
-    -- CONSTRAINT fk_companyID_orderbook
-    -- FOREIGN KEY (companyID)
-    -- REFERENCES company(companyID),
+    -- CONSTRAINT fk_Stock_name_orderbook
+    -- FOREIGN KEY (Stock_name)
+    -- REFERENCES company(Stock_name),
     CONSTRAINT fk_customerID_orderbook
     FOREIGN KEY (customerID)
     REFERENCES users(customerID),
@@ -108,12 +109,12 @@ DROP TABLE IF EXISTS Portfolio;
 CREATE TABLE Portfolio (
     stockvolume int NOT NULL,
     exchangebrokerID varchar(50) NOT NULL,
-    companyID varchar(50) NOT NULL,
+    Stock_name varchar(50) NOT NULL,
     customerID varchar(50) NOT NULL,
-    PRIMARY KEY(exchangebrokerID, companyID, customerID),
-    -- CONSTRAINT fk_companyID_Portfolio
-    -- FOREIGN KEY (companyID)
-    -- REFERENCES company(companyID),
+    PRIMARY KEY(exchangebrokerID, Stock_name, customerID),
+    -- CONSTRAINT fk_Stock_name_Portfolio
+    -- FOREIGN KEY (Stock_name)
+    -- REFERENCES company(Stock_name),
     CONSTRAINT fk_customerID_Portfolio
     FOREIGN KEY (customerID)
     REFERENCES users(customerID),
