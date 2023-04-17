@@ -47,7 +47,7 @@ CREATE TABLE BrokerT (
 
 DROP TABLE IF EXISTS company;
 CREATE TABLE company (
-    SNo int NOT NULL,
+    SNo INT NOT NULL,
     Stock_name varchar(50) NOT NULL,
     Exchange_name varchar(50) NOT NULL,
     cdate DATE NOT NULL,
