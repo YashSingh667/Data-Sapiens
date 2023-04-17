@@ -54,7 +54,7 @@ CREATE TABLE company (
     Low FLOAT DEFAULT NULL,
     Open FLOAT DEFAULT NULL,
     Close FLOAT DEFAULT NULL,
-    PRIMARY KEY (Stock_name, Exchange_name, Date)
+    PRIMARY KEY (Stock_name, Exchange_name, cdate)
 );
 
 
