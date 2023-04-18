@@ -1,0 +1,6 @@
+u_password,brokerID,username,email,dob,fullname
+pass123,brok_02,johndoe,johndoe@example.com,1990-06-15,John Doe
+secret321,brok_05,janedoe,janedoe@example.com,1985-09-23,Jane Doe
+password1234,brok_03,bobsmith,bobsmith@example.com,1998-01-10,Bob Smith
+securepass,brok_01,sarahjones,sarahjones@example.com,1995-11-27,Sarah Jones
+mypassword,brok_04,davidlee,davidlee@example.com,1993-04-18,David Lee
