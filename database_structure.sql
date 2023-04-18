@@ -27,7 +27,6 @@ CREATE TABLE users (
     dob DATE NOT NULL,
     fullname varchar(50) NOT NULL,
     wallet FLOAT DEFAULT NULL,
-    PRIMARY KEY (customerID),
     CONSTRAINT fk_brokerID_users
     FOREIGN KEY (brokerID)
     REFERENCES Broker_details(brokerID)
@@ -84,15 +83,11 @@ DROP TABLE IF EXISTS Orderbook;
 CREATE TABLE Orderbook (
     transactionID SERIAL PRIMARY KEY,
     Stock_name varchar(50) NOT NULL,
-    customerID varchar(50) NOT NULL,
+    customerID INT NOT NULL,
     exchangebrokerID varchar(50) NOT NULL,
     stockvolume int NOT NULL,
     stockprice FLOAT NOT NULL,
     t_date DATE NOT NULL,
-    PRIMARY KEY (transactionID),
-    CONSTRAINT fk_transactionID_orderbook
-    FOREIGN KEY (transactionID)
-    REFERENCES Transactions(transactionID),
     -- CONSTRAINT fk_Stock_name_orderbook
     -- FOREIGN KEY (Stock_name)
     -- REFERENCES company(Stock_name),
@@ -111,7 +106,7 @@ CREATE TABLE Portfolio (
     stockvolume int NOT NULL,
     exchangebrokerID varchar(50) NOT NULL,
     Stock_name varchar(50) NOT NULL,
-    customerID varchar(50) NOT NULL,
+    customerID INT NOT NULL,
     PRIMARY KEY(exchangebrokerID, Stock_name, customerID),
     -- CONSTRAINT fk_Stock_name_Portfolio
     -- FOREIGN KEY (Stock_name)
