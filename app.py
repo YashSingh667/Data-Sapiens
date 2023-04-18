@@ -30,7 +30,7 @@ cursor = conn.cursor()
 
 # Create table for user information if it doesn't exist
 cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                  (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), 
+                  (id SERIAL PRIMARY KEY,
                   name TEXT NOT NULL, 
                   dob DATE NOT NULL,
                   email TEXT NOT NULL, 

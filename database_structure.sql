@@ -1,12 +1,12 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS Transactions;
-CREATE TABLE Transactions (
-    transactionID varchar(50) NOT NULL,
-    t_date DATE NOT NULL,
-    PRIMARY KEY (transactionID)
+-- DROP TABLE IF EXISTS Transactions;
+-- CREATE TABLE Transactions (
+--     transactionID SERIAL PRIMARY KEY,
+--     t_date DATE NOT NULL,
+--     PRIMARY KEY (transactionID)
 
-);
+-- );
 
 DROP TABLE IF EXISTS Broker_details;
 CREATE TABLE Broker_details ( 
@@ -19,7 +19,7 @@ CREATE TABLE Broker_details (
 
 DROP TABLE IF EXISTS users;
 CREATE TABLE users ( 
-    customerID varchar(50) NOT NULL,
+    customerID SERIAL PRIMARY KEY,
     u_password varchar(50) NOT NULL,
     brokerID varchar(50) NOT NULL,
     username varchar(50) NOT NULL,
@@ -82,12 +82,13 @@ CREATE TABLE stockexchange (
 
 DROP TABLE IF EXISTS Orderbook;
 CREATE TABLE Orderbook (
-    transactionID varchar(50) NOT NULL,
+    transactionID SERIAL PRIMARY KEY,
     Stock_name varchar(50) NOT NULL,
     customerID varchar(50) NOT NULL,
     exchangebrokerID varchar(50) NOT NULL,
     stockvolume int NOT NULL,
     stockprice FLOAT NOT NULL,
+    t_date DATE NOT NULL,
     PRIMARY KEY (transactionID),
     CONSTRAINT fk_transactionID_orderbook
     FOREIGN KEY (transactionID)
