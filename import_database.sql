@@ -8,5 +8,7 @@ COPY BrokerT FROM '/home/postgres/Project/small_data/brokerT.csv' WITH CSV HEADE
 
 COPY stockexchange FROM '/home/postgres/Project/small_data/stockexchange_brokerid.csv' WITH CSV HEADER DELIMITER AS ',';
 
+COPY users(u_password, brokerID, username, email, dob, fullname) FROM '/home/postgres/Project/small_data/users_sample.csv' DELIMITER ',' CSV HEADER;
+
 END TRANSACTION;
 
