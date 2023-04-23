@@ -26,8 +26,8 @@ CREATE TABLE users (
     email varchar(50) NOT NULL,
     dob DATE NOT NULL,
     fullname varchar(50) NOT NULL,
-    wallet FLOAT DEFAULT 0.0,
-    role VARCHAR(255) NOT NULL DEFAULT 'user'
+    user_role VARCHAR(50) NOT NULL DEFAULT 'user',
+    wallet FLOAT DEFAULT 0.0,    
     CONSTRAINT fk_brokerID_users
     FOREIGN KEY (brokerID)
     REFERENCES Broker_details(brokerID)
