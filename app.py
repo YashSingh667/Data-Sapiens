@@ -29,15 +29,15 @@ conn = psycopg2.connect(
 cursor = conn.cursor()
 
 # Create table for user information if it doesn't exist
-cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                  (id SERIAL PRIMARY KEY,
-                  name TEXT NOT NULL, 
-                  dob DATE NOT NULL,
-                  email TEXT NOT NULL, 
-                  username TEXT NOT NULL UNIQUE, 
-                  password TEXT NOT NULL,
-                  role VARCHAR(255) NOT NULL DEFAULT 'user');''')
-conn.commit()
+# cursor.execute('''CREATE TABLE IF NOT EXISTS users
+#                   (id SERIAL PRIMARY KEY,
+#                   name TEXT NOT NULL, 
+#                   dob DATE NOT NULL,
+#                   email TEXT NOT NULL, 
+#                   username TEXT NOT NULL UNIQUE, 
+#                   password TEXT NOT NULL,
+#                   role VARCHAR(255) NOT NULL DEFAULT 'user');''')
+# conn.commit()
 
 
 
@@ -69,8 +69,10 @@ def index():
 # Register endpoint
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # options = ['Option 1', 'Option 2', 'Option 3']
     if request.method == 'POST':
         # Get form data
+        
         name = request.form['full-name']
         dob = request.form['date-of-birth']
         email = request.form['email']

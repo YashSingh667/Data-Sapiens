@@ -29,6 +29,14 @@
                   <input type="email" class="form-control" id="email" name="email" required>
                 </div>
                 <div class="form-group">
+                  <label for="exampleSelect">Select an option:</label>
+                  <select class="form-control" id="exampleSelect" name="option">
+                    {% for option in options %}
+                    <option>{{ option }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
                   <label for="username">Username</label>
                   <input type="text" class="form-control" id="username" name="username" required>
                 </div>
