@@ -69,6 +69,13 @@ def index():
 # Register endpoint
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    cursor.execute("select * from broker_details; ")
+    broker_list = cursor.fetchall()
+    broker_names = [name for id,name in broker_list]
+    # print(broker_names)
+    # print(broker_list)
+    broker_id_map = {key : value for value,key in broker_list }
+    # print(broker_id_map)
     # options = ['Option 1', 'Option 2', 'Option 3']
     if request.method == 'POST':
         # Get form data
@@ -76,14 +83,16 @@ def register():
         name = request.form['full-name']
         dob = request.form['date-of-birth']
         email = request.form['email']
+        broker_name = request.form['broker-name']
+        broker_id = broker_id_map[broker_name]
         username = request.form['username']
         password = request.form['password']
         # Insert user information into database
-        cursor.execute("INSERT INTO users (name, dob, email, username, password) VALUES (%s, %s, %s, %s, %s);", (name, dob, email, username, password))
+        cursor.execute("INSERT INTO users (fullname, dob, email, username, u_password, brokerid) VALUES (%s, %s, %s, %s, %s, %s);", (name, dob, email, username, password, broker_id))
         conn.commit()
         return redirect(url_for('login'))
     else:
-        return render_template('register.html')
+        return render_template('register.html',options=broker_names)
 
 # Login endpoint
 @app.route("/login")
