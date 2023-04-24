@@ -32,34 +32,28 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-2">
-        <div class="sidebar-nav">
-          <ul class="nav nav-pills nav-stacked">
-            <li><a href="{{ url_for('account') }}">My Account</a></li>
-            <li><a href="#" data-toggle="modal" data-target="#stock-modal" >Buy/Sell Stocks</a>
-              <div class="modal fade" id="stock-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                      <h4 class="modal-title" id="myModalLabel">Stocks</h4>
-                    </div>
-                    <div class="modal-body">
-                      <p>Select a stock exchange:</p>
-                      <a href="{{ url_for('nasdaq',page=1) }}"><button type="button" class="btn btn-primary">NASDAQ</button></a> 
-                      <button type="button" class="btn btn-primary pull-right">NYSE</button>
-                    </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+              Choose a Date
+            </div>
+            <div class="panel-body">
+              <div class="form-group">
+                <div class="input-group date">
+                  <input type="text" class="form-control" id="datepicker">
+                  <div class="input-group-addon">
+                    <span class="glyphicon glyphicon-th"></span>
                   </div>
                 </div>
-              </div></li>
-            <li><a href="{{ url_for('transacs',page=1) }}">Transactions</a></li>
-          </ul>
-        </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </div>
       </div>
 
 
       <!-- Table with title -->
       <div class="col-md-10">
-        <h2>My Portfolio</h2>
+        <h2>Listed Stocks</h2>
         <table class="table table-striped">
           <thead>
             <tr>
@@ -81,18 +75,31 @@
         <!-- Pagination -->
         <ul class="pagination">
           <li {% if current_page==1 %} class="disabled" {% endif %}><a
-              href="{{ url_for('dashboard', page=1) }}">&laquo;</a></li>
+              href="{{ url_for('nasdaq', page=1) }}">&laquo;</a></li>
           {% for p in range(1, total_pages+1) %}
-          <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('dashboard', page=p) }}">{{ p
+          <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p
               }}</a></li>
           {% endfor %}
           <li {% if current_page==total_pages %} class="disabled" {% endif %}><a
-              href="{{ url_for('dashboard', page=total_pages) }}">»</a></li>
+              href="{{ url_for('nasdaq', page=total_pages) }}">»</a></li>
         </ul>
 
       </div>
     </div>
   </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Datepicker JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+  <script>
+    // Activate the datepicker
+    $('#datepicker').datepicker({
+      format: 'mm/dd/yyyy',
+      autoclose: true,
+      todayHighlight: true
+    });
+  </script>
 </body>
 
 </html>

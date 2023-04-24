@@ -98,15 +98,55 @@ def do_login():
     else:
         return render_template("login.html", error="Invalid username or password")
 
+def get_data_transacs(page):
+    # Calculate the offset and limit values for pagination
+    limit = 10
+    offset = (page - 1) * limit
+    
+    # Write a SQL query to fetch the data with pagination
+    sql_query = f"SELECT * FROM orderbook LIMIT {limit} OFFSET {offset}"
 
+    # Execute the query using psycopg2
+    # cursor = conn.cursor()
+    cursor.execute(sql_query)
+    data = cursor.fetchall()
+    
+    # Calculate the total number of pages
+    cursor.execute("SELECT COUNT(*) FROM orderbook")
+    count = cursor.fetchone()[0]
+    total_pages = int(count / limit) + (count % limit > 0)
+    
+    # Return the data and pagination links
+    return data, total_pages
 
-def get_data(page):
+def get_data_portfolio(page):
     # Calculate the offset and limit values for pagination
     limit = 10
     offset = (page - 1) * limit
     
     # Write a SQL query to fetch the data with pagination
     sql_query = f"SELECT * FROM portfolio LIMIT {limit} OFFSET {offset}"
+
+    # Execute the query using psycopg2
+    # cursor = conn.cursor()
+    cursor.execute(sql_query)
+    data = cursor.fetchall()
+    
+    # Calculate the total number of pages
+    cursor.execute("SELECT COUNT(*) FROM portfolio")
+    count = cursor.fetchone()[0]
+    total_pages = int(count / limit) + (count % limit > 0)
+    
+    # Return the data and pagination links
+    return data, total_pages
+
+def get_data_exchange(page,exchangename):
+    # Calculate the offset and limit values for pagination
+    limit = 10
+    offset = (page - 1) * limit
+    
+    # Write a SQL query to fetch the data with pagination
+    sql_query = f"SELECT * FROM company LIMIT {limit} OFFSET {offset}"
 
     # Execute the query using psycopg2
     # cursor = conn.cursor()
@@ -130,13 +170,29 @@ def dashboard(page):
         cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
         row = cursor.fetchone()
 
-        data, total_pages = get_data(page)
+        data, total_pages = get_data_portfolio(page)
 
         if row is not None:
             return render_template('dashboard.html', data=data, total_pages=total_pages, current_page=page)
             
     else:
         return redirect(url_for("login"))
+    
+@app.route("/nasdaq/<int:page>")
+def nasdaq(page):
+    if "user_id" in session and authorize("user"):
+        user_id = session["user_id"]
+
+        cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
+        row = cursor.fetchone()
+
+        data, total_pages = get_data_portfolio(page)
+
+        if row is not None:
+            return render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page)
+            
+    else:
+        return redirect(url_for("login")) 
     
 @app.route("/account", methods=['GET', 'POST'])
 def account():
@@ -160,7 +216,21 @@ def account():
     else:
         return redirect(url_for("login"))
     
+@app.route("/transactions/<int:page>")
+def transacs(page):
+    if "user_id" in session and authorize("user"):
+        user_id = session["user_id"]
 
+        cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
+        row = cursor.fetchone()
+
+        data, total_pages = get_data_transacs(page)
+
+        if row is not None:
+            return render_template('transacs.html', data=data, total_pages=total_pages, current_page=page)
+            
+    else:
+        return redirect(url_for("login"))
 
 @app.route("/logout")
 def logout():
