@@ -28,23 +28,13 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 
-# Create table for user information if it doesn't exist
-# cursor.execute('''CREATE TABLE IF NOT EXISTS users
-#                   (id SERIAL PRIMARY KEY,
-#                   name TEXT NOT NULL, 
-#                   dob DATE NOT NULL,
-#                   email TEXT NOT NULL, 
-#                   username TEXT NOT NULL UNIQUE, 
-#                   password TEXT NOT NULL,
-#                   role VARCHAR(255) NOT NULL DEFAULT 'user');''')
-# conn.commit()
 
 
 
 def authenticate(username, password):
     # conn = psycopg2.connect(database="mydatabase", user="myuser", password="mypassword", host="localhost", port="5432")
     # cur = conn.cursor()
-    cursor.execute("SELECT id, username, role FROM users WHERE username=%s AND password=%s", (username, password))
+    cursor.execute("SELECT customerID, username, user_role FROM users WHERE username=%s AND u_password=%s", (username, password))
     row = cursor.fetchone()
     # cursor.close()
     # conn.close()
@@ -104,38 +94,80 @@ def do_login():
     username = request.form["login-username"]
     password = request.form["login-password"]
     if authenticate(username, password):
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("dashboard", page=1))
     else:
         return render_template("login.html", error="Invalid username or password")
 
 
 
+def get_data(page):
+    # Calculate the offset and limit values for pagination
+    limit = 10
+    offset = (page - 1) * limit
+    
+    # Write a SQL query to fetch the data with pagination
+    sql_query = f"SELECT * FROM portfolio LIMIT {limit} OFFSET {offset}"
 
-@app.route("/dashboard")
-def dashboard():
+    # Execute the query using psycopg2
+    # cursor = conn.cursor()
+    cursor.execute(sql_query)
+    data = cursor.fetchall()
+    
+    # Calculate the total number of pages
+    cursor.execute("SELECT COUNT(*) FROM portfolio")
+    count = cursor.fetchone()[0]
+    total_pages = int(count / limit) + (count % limit > 0)
+    
+    # Return the data and pagination links
+    return data, total_pages
+
+
+@app.route("/dashboard/<int:page>")
+def dashboard(page):
     if "user_id" in session and authorize("user"):
         user_id = session["user_id"]
-        # conn = psycopg2.connect(database="mydatabase", user="myuser", password="mypassword", host="localhost", port="5432")
-        # cur = conn.cursor()
-        cursor.execute("SELECT username, email FROM users WHERE id=%s", (user_id,))
+
+        cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
         row = cursor.fetchone()
-        # cursor.close()
-        # conn.close()
+
+        data, total_pages = get_data(page)
+
         if row is not None:
-            return render_template("dashboard.html", username=row[0], email=row[1])
+            return render_template('dashboard.html', data=data, total_pages=total_pages, current_page=page)
+            
     else:
         return redirect(url_for("login"))
+    
+@app.route("/account", methods=['GET', 'POST'])
+def account():
+    if "user_id" in session and authorize("user"):
+        user_id = session["user_id"]
+        cursor.execute("SELECT *, date_part('year',AGE(CURRENT_DATE, dob)) as age FROM users JOIN broker_details ON broker_details.brokerid = users.brokerid AND customerID=%s", (user_id,))
+        row = cursor.fetchone()
+        print(row)
+        if row is not None:
+                
+                if request.method == 'POST':
+                # Get form data
+                    
+                    add_balance = request.form['wallet-balance']                    
+                    cursor.execute("UPDATE users SET wallet = wallet + %s WHERE customerID = %s;", (add_balance,user_id))
+                    conn.commit()
+                    return redirect(url_for('account'))
+                else:                    
+                    return render_template('account.html', data=row)
+            
+    else:
+        return redirect(url_for("login"))
+    
+
 
 @app.route("/logout")
-# def logout():
-#     session.pop("user_id", None)
-#     session.pop("username", None)
-#     session.pop("role", None)
-#     return redirect(url_for("home"))
-
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
 
 if __name__ == '__main__':
     app.run()
