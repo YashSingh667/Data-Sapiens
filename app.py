@@ -13,7 +13,7 @@
 #     app.run(debug = True, port = 8000)
 from flask import Flask, render_template, request, session, redirect, url_for
 import psycopg2
-
+from datetime import date
 
 app = Flask(__name__,template_folder='FRONT_END/')
 app.config['DEBUG'] = True
@@ -98,13 +98,15 @@ def do_login():
     else:
         return render_template("login.html", error="Invalid username or password")
 
-def get_data_transacs(page):
+def get_data_transacs(page,userid):
     # Calculate the offset and limit values for pagination
     limit = 10
     offset = (page - 1) * limit
     
     # Write a SQL query to fetch the data with pagination
-    sql_query = f"SELECT * FROM orderbook LIMIT {limit} OFFSET {offset}"
+    # sql_query = f"SELECT * FROM orderbook LIMIT {limit} OFFSET {offset}"
+
+    sql_query = f"select t_date, transactionID, stock_name, Exchange_name,stockvolume, stockprice from Orderbook join stockexchange on stockexchange.exchangebrokerID = Orderbook.exchangebrokerID where customerID = {userid} order by t_date desc LIMIT {limit} OFFSET {offset}"
 
     # Execute the query using psycopg2
     # cursor = conn.cursor()
@@ -112,49 +114,50 @@ def get_data_transacs(page):
     data = cursor.fetchall()
     
     # Calculate the total number of pages
-    cursor.execute("SELECT COUNT(*) FROM orderbook")
+    cursor.execute("SELECT COUNT(*) FROM orderbook where customerID = %s",(userid,))
     count = cursor.fetchone()[0]
     total_pages = int(count / limit) + (count % limit > 0)
     
     # Return the data and pagination links
     return data, total_pages
 
-def get_data_portfolio(page):
+def get_data_portfolio(page,userid):
     # Calculate the offset and limit values for pagination
     limit = 10
     offset = (page - 1) * limit
     
     # Write a SQL query to fetch the data with pagination
-    sql_query = f"SELECT * FROM portfolio LIMIT {limit} OFFSET {offset}"
-
+    # sql_query = f"SELECT * FROM portfolio LIMIT {limit} OFFSET {offset}"
+    sql_query = f"select stock_name,Exchange_name,stockvolume from portfolio join stockexchange on stockexchange.exchangebrokerID = portfolio.exchangebrokerID where customerID = {userid} order by stock_name LIMIT {limit} OFFSET {offset}"
     # Execute the query using psycopg2
     # cursor = conn.cursor()
     cursor.execute(sql_query)
     data = cursor.fetchall()
     
     # Calculate the total number of pages
-    cursor.execute("SELECT COUNT(*) FROM portfolio")
+    cursor.execute("SELECT COUNT(*) FROM portfolio where customerID = %s",(userid,))
     count = cursor.fetchone()[0]
     total_pages = int(count / limit) + (count % limit > 0)
     
     # Return the data and pagination links
     return data, total_pages
 
-def get_data_exchange(page,exchangename):
+def get_data_exchange(page,exchangename,date):
     # Calculate the offset and limit values for pagination
     limit = 10
     offset = (page - 1) * limit
     
     # Write a SQL query to fetch the data with pagination
-    sql_query = f"SELECT * FROM company LIMIT {limit} OFFSET {offset}"
+    sql_query = f"select stock_name, high, low, open, close from company where cdate = {date} and Exchange_name = {exchangename} order by stock_name LIMIT {limit} OFFSET {offset}"
 
     # Execute the query using psycopg2
     # cursor = conn.cursor()
-    cursor.execute(sql_query)
+    # cursor.execute(sql_query)
+    cursor.execute("select stock_name, high, low, open, close from company where cdate = %s and Exchange_name = %s LIMIT %s OFFSET %s",(date,exchangename,limit,offset))
     data = cursor.fetchall()
     
     # Calculate the total number of pages
-    cursor.execute("SELECT COUNT(*) FROM portfolio")
+    cursor.execute("SELECT COUNT(*) FROM company where cdate = %s and Exchange_name = %s",(date,exchangename))
     count = cursor.fetchone()[0]
     total_pages = int(count / limit) + (count % limit > 0)
     
@@ -170,7 +173,7 @@ def dashboard(page):
         cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
         row = cursor.fetchone()
 
-        data, total_pages = get_data_portfolio(page)
+        data, total_pages = get_data_portfolio(page,user_id)
 
         if row is not None:
             return render_template('dashboard.html', data=data, total_pages=total_pages, current_page=page)
@@ -178,17 +181,25 @@ def dashboard(page):
     else:
         return redirect(url_for("login"))
     
-@app.route("/nasdaq/<int:page>")
+@app.route("/nasdaq/<int:page>", methods=['GET', 'POST'])
 def nasdaq(page):
     if "user_id" in session and authorize("user"):
         user_id = session["user_id"]
 
         cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
         row = cursor.fetchone()
-
-        data, total_pages = get_data_portfolio(page)
+        
+        
 
         if row is not None:
+            if request.method == 'POST':
+                new_date = request.form['datepicker']
+                data, total_pages = get_data_exchange(page,'nasdaq',new_date)
+                print(data)
+                # return render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page)
+            else:
+                date_param = '1970-01-02'
+                data, total_pages = get_data_exchange(page,'nasdaq',date_param)
             return render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page)
             
     else:
@@ -224,7 +235,7 @@ def transacs(page):
         cursor.execute("SELECT username, email FROM users WHERE customerID=%s", (user_id,))
         row = cursor.fetchone()
 
-        data, total_pages = get_data_transacs(page)
+        data, total_pages = get_data_transacs(page,user_id)
 
         if row is not None:
             return render_template('transacs.html', data=data, total_pages=total_pages, current_page=page)

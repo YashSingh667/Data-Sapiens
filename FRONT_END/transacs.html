@@ -65,7 +65,10 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>Date</th>
+                            <th>Transaction ID</th>
                             <th>Stock Name</th>
+                            <th>Exchange Name</th>
                             <th>Quantity</th>
                             <th>Price</th>
                         </tr>
@@ -76,6 +79,9 @@
                             <td>{{ row[0] }}</td>
                             <td>{{ row[1] }}</td>
                             <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
