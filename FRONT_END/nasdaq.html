@@ -32,20 +32,50 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-2">
+        <!-- <div class="container">
+          <h1>Select a Date</h1>
+          <div class="row">
+            <div class="col-md-2">
+              <div class="form-group">
+                <div class="input-group date" id="datepicker">
+                  <input type="text" class="form-control">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </div>
+        </div>
+        <script>
+          $(document).ready(function(){
+            $('#datepicker').datepicker({
+              format: "dd/mm/yyyy",
+              autoclose: true,
+              todayHighlight: true
+            });
+          });
+        </script> -->
         <div class="panel panel-default">
             <div class="panel-heading">
               Choose a Date
             </div>
             <div class="panel-body">
-              <div class="form-group">
-                <div class="input-group date">
-                  <input type="text" class="form-control" id="datepicker">
-                  <div class="input-group-addon">
-                    <span class="glyphicon glyphicon-th"></span>
+              <form method="POST" action="{{ url_for('nasdaq',page=1) }}">
+                <div class="form-group">
+                  <div class="input-group date">
+                    <input type="text" class="form-control" id="datepicker" name = "datepicker" required>
+                    <div class="input-group-addon">
+                      <span class="glyphicon glyphicon-th"></span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+              
             </div>
           </div>
       </div>
@@ -58,16 +88,21 @@
           <thead>
             <tr>
               <th>Stock Name</th>
-              <th>Quantity</th>
-              <th>Price</th>
+              <th>Highest Price</th>
+              <th>Lowest Price</th>
+              <th>Open Price</th>
+              <th>Close Price</th>
             </tr>
           </thead>
           <tbody>
             {% for row in data %}
             <tr>
-              <td>{{ row[0] }}</td>
+              <td><a href="">{{ row[0] }}</a> </td>
               <td>{{ row[1] }}</td>
               <td>{{ row[2] }}</td>
+              <td>{{ row[3] }}</td>
+              <td>{{ row[4] }}</td>
+              
             </tr>
             {% endfor %}
           </tbody>
