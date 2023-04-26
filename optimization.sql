@@ -1,0 +1,1 @@
+CREATE INDEX idx_company_cdate_exchange_name ON company (cdate, Exchange_name);

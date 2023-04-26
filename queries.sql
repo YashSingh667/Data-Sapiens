@@ -44,3 +44,11 @@ from company
 where cdate = '2005-09-27' and Exchange_name = 'nasdaq';
 
 SELECT COUNT(*) FROM company where cdate = '2005-09-27' and Exchange_name = 'nasdaq'
+
+
+select stock_name, high, low, open, close from company 
+where cdate = %s and Exchange_name = %s and high is not null and low is not null and open is not null and close is not null
+order by stock_name LIMIT %s OFFSET %s;
+
+
+

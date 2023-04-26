@@ -35,22 +35,26 @@
         <div class="sidebar-nav">
           <ul class="nav nav-pills nav-stacked">
             <li><a href="{{ url_for('account') }}">My Account</a></li>
-            <li><a href="#" data-toggle="modal" data-target="#stock-modal" >Buy/Sell Stocks</a>
+            <li><a href="#" data-toggle="modal" data-target="#stock-modal">Buy/Sell Stocks</a>
               <div class="modal fade" id="stock-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                          aria-hidden="true">&times;</span></button>
                       <h4 class="modal-title" id="myModalLabel">Stocks</h4>
                     </div>
                     <div class="modal-body">
                       <p>Select a stock exchange:</p>
-                      <a href="{{ url_for('nasdaq',page=1) }}"><button type="button" class="btn btn-primary">NASDAQ</button></a> 
-                      <button type="button" class="btn btn-primary pull-right">NYSE</button>
+                      <a href="{{ url_for('nasdaq',page=1) }}"><button type="button"
+                          class="btn btn-primary">NASDAQ</button></a>
+                      <a href="{{ url_for('nyse',page=1) }}"><button type="button" class="btn btn-primary pull-right">NYSE</button></a>
+                      
                     </div>
                   </div>
                 </div>
-              </div></li>
+              </div>
+            </li>
             <li><a href="{{ url_for('transacs',page=1) }}">Transactions</a></li>
           </ul>
         </div>
