@@ -67,9 +67,38 @@ COMMIT;
 
 
 
+----- Selling of Stocks -----
 
+BEGIN TRANSACTION;
 
+-- Check if user exists
+IF EXISTS (SELECT * FROM users WHERE username = '<username>') THEN
+    -- Check user's portfolio stock volume
+    SELECT stockvolume FROM Portfolio WHERE customerID = <customer_id> AND Stock_name = '<stock_name>';
+    -- Check if user has sufficient stock volume
+    IF ((SELECT stockvolume FROM Portfolio WHERE customerID = <customer_id> AND Stock_name = '<stock_name>') >= <stock_volume>) THEN
+        -- Update user's portfolio stock volume
+        UPDATE Portfolio SET stockvolume = stockvolume - <stock_volume>
+        WHERE customerID = <customer_id> AND Stock_name = '<stock_name>';
 
+        -- Sell stock to company table
+        INSERT INTO Orderbook (Stock_name, customerID, exchangebrokerID, stockvolume, stockprice, t_date)
+        VALUES ('<stock_name>', <customer_id>, '<exchange_broker_id>', <stock_volume>, <stock_price>, '<transaction_date>');
+
+        -- Update user's wallet balancei
+        UPDATE users SET wallet = wallet + (<stock_volume> * <stock_price>) WHERE username = '<username>';
+
+    ELSE
+        -- Throw an error if user has insufficient stock volume
+        RAISE EXCEPTION 'Insufficient stock volume in user portfolio.';
+    END IF;
+
+ELSE
+    -- Throw an error if user does not exist
+    RAISE EXCEPTION 'User does not exist.';
+END IF;
+
+COMMIT;
 
 
 
