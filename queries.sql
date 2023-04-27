@@ -23,3 +23,33 @@ WHERE customerID = /var;
 
 
 
+--- Buying of stock ---
+
+BEGIN TRANSACTION;
+
+-- Check if user exists
+SELECT * FROM users WHERE username = '<username>';
+
+-- Check user's wallet balance
+SELECT wallet FROM users WHERE username = '<username>';
+
+-- Check if user has sufficient balance
+IF ((SELECT wallet FROM users WHERE username = '<username>') >= (<stock_volume> * <stock_price>)) THEN
+    -- Buy stock from company table
+    INSERT INTO Orderbook (Stock_name, customerID, exchangebrokerID, stockvolume, stockprice, t_date)
+    VALUES ('<stock_name>', <customer_id>, '<exchange_broker_id>', <stock_volume>, <stock_price>, '<transaction_date>');
+
+    -- Update user's wallet balance
+    UPDATE users SET wallet = wallet - (<stock_volume> * <stock_price>) WHERE username = '<username>';
+
+    -- Update user's portfolio
+    INSERT INTO Portfolio (stockvolume, exchangebrokerID, Stock_name, customerID)
+    VALUES (<stock_volume>, '<exchange_broker_id>', '<stock_name>', <customer_id>)
+    ON DUPLICATE KEY UPDATE stockvolume = stockvolume + <stock_volume>;
+
+ELSE
+    -- Throw an error if user has insufficient balance
+    RAISE EXCEPTION 'Insufficient balance in user wallet.';
+END IF;
+
+COMMIT;
