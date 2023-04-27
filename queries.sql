@@ -21,6 +21,35 @@ UPDATE users
 SET wallet = /var
 WHERE customerID = /var;
 
+-- portfolio --
+select stock_name,Exchange_name,stockvolume
+from portfolio
+join stockexchange
+on stockexchange.exchangebrokerID = portfolio.exchangebrokerID
+where customerID = %s
+
+
+-- transactions
+select t_date, transactionID, stock_name, Exchange_name, stockvolume, stockprice 
+from Orderbook
+join stockexchange
+on stockexchange.exchangebrokerID = Orderbook.exchangebrokerID
+where customerID = %s
+order by t_date
+
+-- nasdaq --
+
+select stock_name, high, low, open, close
+from company 
+where cdate = '2005-09-27' and Exchange_name = 'nasdaq';
+
+SELECT COUNT(*) FROM company where cdate = '2005-09-27' and Exchange_name = 'nasdaq'
+
+
+select stock_name, high, low, open, close from company 
+where cdate = %s and Exchange_name = %s and high is not null and low is not null and open is not null and close is not null
+order by stock_name LIMIT %s OFFSET %s;
+
 
 
 --- Buying of stock ---

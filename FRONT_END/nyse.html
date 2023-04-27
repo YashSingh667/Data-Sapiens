@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Stocks App</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script> -->
+
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="{{ url_for('dashboard',page=1) }}">My Stocks App</a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Choose a Date
+          </div>
+          <div class="panel-body">
+            <form method="POST" action="{{ url_for('nasdaq',page=1) }}">
+              <div class="form-group">
+                <div class="input-group date">
+                  <input type="text" class="form-control" id="datepicker" name="datepicker" required>
+                  <div class="input-group-addon">
+                    <span class="glyphicon glyphicon-th"></span>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+          </div>
+        </div>
+
+        <div>
+          Last Transaction Date : {{latest_transaction_date}}
+        </div>
+      </div>
+
+
+      <!-- Table with title -->
+      <div class="col-md-10">
+        <h2>Listed Stocks on NYSE : {{current_date}}</h2>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Stock Name</th>
+              <th>Highest Price</th>
+              <th>Lowest Price</th>
+              <th>Open Price</th>
+              <th>Close Price</th>
+              <th>Buy / Sell</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for index, row in enumerate(data) %}
+            <tr>
+              <td><a href="">{{ row[0] }}</a> </td>
+              <td>{{ row[1] }}</td>
+              <td>{{ row[2] }}</td>
+              <td>{{ row[3] }}</td>
+              <td>{{ row[4] }}</td>
+              <td>
+                <a href="#" data-toggle="modal" data-target="#stock-modal-{{ index }}">Buy</a>
+                <div class="modal fade" id="stock-modal-{{ index }}" tabindex="-1" role="dialog"
+                  aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Buy {{ row[0] }} Stocks</h4>
+                      </div>
+                      <form action="{{ url_for('nasdaq',page=1 ) }}" method="post">
+                        <div class="modal-body">
+                          <div class="row">
+                            <div class="col-sm-4"> <strong>Current Wallet Balance :</strong> </div>
+                            <div class="col-sm-4">$ {{c_wallet[0]}} </div>
+                            
+                          </div>
+                          <div class="row"></div>
+                          <div class="row">
+
+                            <div class="col-sm-4"><strong>Price:</strong> ${{ row[3] }}</div>
+                            <div class="col-sm-4"><strong>Quantity:</strong> <input type="number" min="0"
+                                name="quantity{{ index }}" id="quantity{{ index }}"></div>
+                            <div class="col-sm-4"><strong>Cost:</strong> $<span id="cost{{ index }}"></span></div>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-primary">Confirm</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                  $(document).ready(function () {
+                    $('#quantity{{ index }}').on('input', function () {
+                      var price = parseFloat("{{ row[3] }}");
+                      var quantity = parseInt($(this).val());
+                      if (isNaN(quantity)) {
+                        quantity = 0;
+                      }
+                      $('#cost{{ index }}').text((price * quantity).toFixed(2));
+                    });
+                  });
+                </script>
+
+
+                |
+                
+                <a href="#" data-toggle="modal" data-target="#sell-modal-{{ index }}">Sell</a>
+                <div class="modal fade" id="sell-modal-{{ index }}" tabindex="-1" role="dialog"
+                  aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Sell {{ row[0] }} Stocks</h4>
+                      </div>
+                      <form action="{{ url_for('nasdaq',page=1 ) }}" method="post">
+                        <div class="modal-body">
+                          <div class="row">
+                            <div class="col-sm-4"> <strong>Current Wallet Balance :</strong> </div>
+                            <div class="col-sm-4">$ {{c_wallet[0]}} </div>
+                            
+                           
+                          </div>
+                          <div class="row"></div>
+                          <div class="row">
+
+                            <div class="col-sm-4"><strong>Price:</strong> ${{ row[3] }}</div>
+                            <div class="col-sm-4"><strong>Quantity:</strong> <input type="number" min="0"
+                                name="quantity-sell-{{ index }}" id="quantity-sell-{{ index }}"></div>
+                            <div class="col-sm-4"><strong>Cost:</strong> $<span id="cost-sell-{{ index }}"></span></div>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-primary">Confirm</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                  $(document).ready(function () {
+                    $('#quantity-sell-{{ index }}').on('input', function () {
+                      var price = parseFloat("{{ row[3] }}");
+                      var quantity = parseInt($(this).val());
+                      if (isNaN(quantity)) {
+                        quantity = 0;
+                      }
+                      $('#cost-sell-{{ index }}').text((price * quantity).toFixed(2));
+                    });
+                  });
+                </script>
+
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <ul class="pagination">
+          <li {% if current_page==1 %} class="disabled" {% endif %}><a href="{{ url_for('nasdaq', page=1) }}">&laquo;</a></li>
+          {% if total_pages <= limit %}
+            {% for p in range(1, total_pages+1) %}
+              <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p }}</a></li>
+            {% endfor %}
+          {% else %}
+            {% set left_links = 3 %}
+            {% set right_links = 3 %}
+            {% if current_page - left_links > 1 %}
+              <li><a href="{{ url_for('nasdaq', page=1) }}">1</a></li>
+              {% if current_page - left_links > 2 %}
+                <li class="disabled"><span>...</span></li>
+              {% endif %}
+            {% endif %}
+            {% set start_index = current_page - left_links %}
+            {% if start_index < 1 %}
+              {% set start_index = 1 %}
+            {% endif %}
+            {% set end_index = current_page + right_links %}
+            {% if end_index > total_pages %}
+              {% set end_index = total_pages %}
+            {% endif %}
+            {% for p in range(start_index, end_index+1) %}
+              <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p }}</a></li>
+            {% endfor %}
+            {% if current_page + right_links < total_pages %}
+              {% if current_page + right_links < total_pages - 1 %}
+                <li class="disabled"><span>...</span></li>
+              {% endif %}
+              <li><a href="{{ url_for('nasdaq', page=total_pages) }}">{{ total_pages }}</a></li>
+            {% endif %}
+          {% endif %}
+          <li {% if current_page==total_pages %} class="disabled" {% endif %}><a href="{{ url_for('nasdaq', page=total_pages) }}">»</a></li>
+        </ul>
+        
+        
+        <!-- <ul class="pagination">
+          <li {% if current_page==1 %} class="disabled" {% endif %}><a
+              href="{{ url_for('nasdaq', page=1) }}">&laquo;</a></li>
+          {% for p in range(1, total_pages+1) %}
+          <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p
+              }}</a></li>
+          {% endfor %}
+          <li {% if current_page==total_pages %} class="disabled" {% endif %}><a
+              href="{{ url_for('nasdaq', page=total_pages) }}">»</a></li>
+        </ul> -->
+
+      </div>
+    </div>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Datepicker JS -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+  <script>
+    // Activate the datepicker
+    $('#datepicker').datepicker({
+      format: 'mm/dd/yyyy',
+      autoclose: true,
+      todayHighlight: true
+    });
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+</body>
+
+</html>

@@ -29,6 +29,14 @@
                   <input type="email" class="form-control" id="email" name="email" required>
                 </div>
                 <div class="form-group">
+                  <label for="broker-name">Select a Broker:</label>
+                  <select type="text" class="form-control" id="broker-name" name="broker-name" required>
+                    {% for option in options %}
+                    <option>{{ option }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
                   <label for="username">Username</label>
                   <input type="text" class="form-control" id="username" name="username" required>
                 </div>
