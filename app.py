@@ -1,17 +1,5 @@
-# from flask import Flask, render_template
-# app = Flask(__name__,template_folder='FRONT_END/')
 
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
-
-# @app.route('/products')
-# def products():
-#     return "this is blash!"
-
-# if __name__ == "__main__":
-#     app.run(debug = True, port = 8000)
-from flask import Flask, render_template, request, session, redirect, url_for, make_response
+from flask import Flask, render_template, request, session, redirect, url_for, make_response,jsonify
 import psycopg2
 import psycopg2.pool
 from datetime import datetime
@@ -20,14 +8,7 @@ app = Flask(__name__,template_folder='FRONT_END/')
 app.config['DEBUG'] = True
 app.secret_key = "mysecretkey"
 
-# Configure PostgreSQL database connection
-# conn = psycopg2.connect(
-#     host="localhost",
-#     database="test",
-#     user="postgres",
-#     password="oarkyud"
-# )
-# cursor = conn.cursor()
+
 
 pool = psycopg2.pool.SimpleConnectionPool(
      minconn=1,
@@ -46,8 +27,7 @@ app.jinja_env.globals.update(enumerate=jinja2_enumerate)
 
 
 def authenticate(username, password):
-    # conn = psycopg2.connect(database="mydatabase", user="myuser", password="mypassword", host="localhost", port="5432")
-    # cur = conn.cursor()
+    
     conn = pool.getconn()
     cursor = conn.cursor()
     cursor.execute("SELECT customerID, username, user_role FROM users WHERE username=%s AND u_password=%s;", (username, password))
@@ -59,7 +39,7 @@ def authenticate(username, password):
         session["user_id"] = row[0]
         session["username"] = row[1]
         session["role"] = row[2]
-        session["selected_date"] = '1970-01-02'
+        session["selected_date"] = '1/2/1970'
         return True
     else:
         return False
@@ -180,9 +160,7 @@ def get_data_exchange(page,exchangename,date):
     # Write a SQL query to fetch the data with pagination
     sql_query = f"select stock_name, high, low, open, close from company where cdate = {date} and Exchange_name = {exchangename} order by stock_name LIMIT {limit} OFFSET {offset};"
 
-    # Execute the query using psycopg2
-    # cursor = conn.cursor()
-    # cursor.execute(sql_query)
+    
     date_object = datetime.strptime(date, '%m/%d/%Y')
 
     # Convert the datetime object to the correct format for PostgreSQL
@@ -239,9 +217,9 @@ def nasdaq(page):
         pool.putconn(conn)
 
         if row is not None:
-            selected_date = request.cookies.get('selected_date', '1/2/1970')
-            # selected_date = session.get('selected_date','1970-01-02')
-            if request.method == 'POST':
+            # selected_date = request.cookies.get('selected_date', '1/2/1970')
+            selected_date = session.get('selected_date','1/2/1970')
+            if (request.method == 'POST' and 'datepicker' in request.form):
                 selected_date = request.form['datepicker']
                 print(selected_date)
                 data, total_pages = get_data_exchange(page,'nasdaq',selected_date)
@@ -255,7 +233,7 @@ def nasdaq(page):
                 latest_transaction_date = "To be done"
                 resp = make_response(render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page,limit = 10,current_date = selected_date,latest_transaction_date = latest_transaction_date,c_wallet = wallet))
                 resp.set_cookie('selected_date',selected_date)
-                # session['selected_date'] = selected_date
+                session['selected_date'] = selected_date
                 return resp
                 # print(data)
                 # return render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page)
@@ -274,6 +252,7 @@ def nasdaq(page):
     else:
         return redirect(url_for("login")) 
 
+
 @app.route("/nyse/<int:page>", methods=['GET', 'POST'])
 def nyse(page):
     if "user_id" in session and authorize("user"):
@@ -288,8 +267,8 @@ def nyse(page):
         pool.putconn(conn)
 
         if row is not None:
-            selected_date = request.cookies.get('selected_date', '1/2/1970')
-            # selected_date = session.get('selected_date','1970-01-02')
+            # selected_date = request.cookies.get('selected_date', '1/2/1970')
+            selected_date = session.get('selected_date','1/2/1970')
             if request.method == 'POST':
                 selected_date = request.form['datepicker']
                 print(selected_date)
@@ -304,7 +283,7 @@ def nyse(page):
                 latest_transaction_date = "To be done"
                 resp = make_response(render_template('nyse.html', data=data, total_pages=total_pages, current_page=page,limit = 10,current_date = selected_date,latest_transaction_date = latest_transaction_date,c_wallet = wallet))
                 resp.set_cookie('selected_date',selected_date)
-                # session['selected_date'] = selected_date
+                session['selected_date'] = selected_date
                 return resp
                 # print(data)
                 # return render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page)
@@ -322,6 +301,122 @@ def nyse(page):
             
     else:
         return redirect(url_for("login")) 
+
+
+@app.route("/process_buy_order",methods=['POST'])
+
+def process_buy_order():
+    if request.method == 'POST':
+        print("this is running")
+        sell_data = request.get_json()
+        stockName = sell_data['stockName']
+        quantity = sell_data['quantity']
+        cost = sell_data['cost']
+        # wallet = sell_data['wallet']
+        exchange = str(sell_data['exchange'])
+        user_id = session["user_id"]
+        stock_price = round(float(cost)/int(quantity),2)
+        date_ = sell_data['date']
+        date_obj = datetime.strptime(date_, '%m/%d/%Y')
+        date_ = date_obj.strftime('%Y-%m-%d')
+        # get exchangeBrokerID
+        conn = pool.getconn()
+        cursor = conn.cursor()
+        cursor.execute("select temp.exchangebrokerid from stockexchange join (    select * from users     join brokert    on brokert.brokerid = users.brokerid and users.customerid = %s) as temp on temp.exchangebrokerid = stockexchange.exchangebrokerid and stockexchange.exchange_name = %s;",(user_id,exchange))
+        ex_brok_id = cursor.fetchone()[0]
+        cursor.close()
+        pool.putconn(conn)
+        print(sell_data)
+        tr_succ = False        
+        
+        try:
+            conn = pool.getconn()
+            cursor = conn.cursor()
+            
+            # cursor.execute(sql_query)
+            cursor.execute("CALL buy_stock(%s, %s,%s, %s,%s, %s, %s);",(user_id,cost,stockName,quantity,ex_brok_id,stock_price,date_))
+            
+            conn.commit()
+            cursor.close()
+            pool.putconn(conn)
+            print("Transaction successful.")
+            tr_succ = True
+
+        except psycopg2.DatabaseError as error:
+            print(error)
+            tr_succ = False
+            conn.rollback()
+
+        finally:
+            print("This is ok")
+            
+        # perform the transaction and check if it was successful
+        if tr_succ:
+            results = {'success': 'true', 'message': 'Transaction completed successfully'}
+        else:
+            results = {'success': 'false', 'message': 'Transaction failed'}
+    else:
+        results = {'success': 'false', 'message': 'Invalid request method'}
+    return jsonify(results)
+
+@app.route("/process_sell_order",methods=['POST'])
+
+def process_sell_order():
+    if request.method == 'POST':
+        print("this is running")
+        sell_data = request.get_json()
+        stockName = sell_data['stockName']
+        quantity = sell_data['quantity']
+        cost = sell_data['cost']
+        # print(cost)
+        # wallet = sell_data['wallet']
+        exchange = str(sell_data['exchange'])
+        user_id = session["user_id"]
+        stock_price = round(float(cost)/int(quantity),2)
+        # stock_price = cost/quantity
+        date_ = sell_data['date']
+        date_obj = datetime.strptime(date_, '%m/%d/%Y')
+        date_ = date_obj.strftime('%Y-%m-%d')
+        # get exchangeBrokerID
+        conn = pool.getconn()
+        cursor = conn.cursor()
+        cursor.execute("select temp.exchangebrokerid from stockexchange join (    select * from users     join brokert    on brokert.brokerid = users.brokerid and users.customerid = %s) as temp on temp.exchangebrokerid = stockexchange.exchangebrokerid and stockexchange.exchange_name = %s;",(user_id,exchange))
+        ex_brok_id = cursor.fetchone()[0]
+        cursor.close()
+        pool.putconn(conn)
+        print(sell_data)
+        tr_succ = False        
+        
+        try:
+            conn = pool.getconn()
+            cursor = conn.cursor()
+
+            # cursor.execute(sql_query)
+            "CALL sell_stock(user_id, stockName, quantity, ex_brok_id, stock_price, date_);"
+            cursor.execute("CALL sell_stock(%s,%s, %s, %s, %s, %s, %s);",(user_id,cost,stockName,quantity,ex_brok_id,stock_price,date_))
+            
+            conn.commit()
+            cursor.close()
+            pool.putconn(conn)
+            print("Transaction successful.")
+            tr_succ = True
+
+        except psycopg2.DatabaseError as error:
+            print(error)
+            tr_succ = False
+            conn.rollback()
+
+        finally:
+            print("This is ok")
+            
+        # perform the transaction and check if it was successful
+        if tr_succ:
+            results = {'success': 'true', 'message': 'Transaction completed successfully'}
+        else:
+            results = {'success': 'false', 'message': 'Transaction failed'}
+    else:
+        results = {'success': 'false', 'message': 'Invalid request method'}
+    return jsonify(results)
 
 
 
@@ -374,6 +469,7 @@ def transacs(page):
 
 @app.route("/logout")
 def logout():
+    
     session.clear()
     return redirect(url_for('login'))
 

@@ -8,7 +8,10 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
   <!-- jQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"> -->
+  </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <!-- Bootstrap JS -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script> -->
@@ -16,6 +19,16 @@
 </head>
 
 <body>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Datepicker JS -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
   <!-- Navbar -->
   <nav class="navbar navbar-default">
     <div class="container-fluid">
@@ -38,7 +51,7 @@
             Choose a Date
           </div>
           <div class="panel-body">
-            <form method="POST" action="{{ url_for('nasdaq',page=1) }}">
+            <form method="POST" action="{{ url_for('nyse',page=1) }}">
               <div class="form-group">
                 <div class="input-group date">
                   <input type="text" class="form-control" id="datepicker" name="datepicker" required>
@@ -92,17 +105,17 @@
                             aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="myModalLabel">Buy {{ row[0] }} Stocks</h4>
                       </div>
-                      <form action="{{ url_for('nasdaq',page=1 ) }}" method="post">
+                      <form action="{{ url_for('nyse',page=1 ) }}" method="post">
                         <div class="modal-body">
                           <div class="row">
                             <div class="col-sm-4"> <strong>Current Wallet Balance :</strong> </div>
                             <div class="col-sm-4">$ {{c_wallet[0]}} </div>
-                            
+
                           </div>
                           <div class="row"></div>
                           <div class="row">
-
-                            <div class="col-sm-4"><strong>Price:</strong> ${{ row[3] }}</div>
+                            {% set average = (row[1] + row[2] + row[3] + row[4]) / 4 %}
+                            <div class="col-sm-4"><strong>Price:</strong> ${{ average }}</div>
                             <div class="col-sm-4"><strong>Quantity:</strong> <input type="number" min="0"
                                 name="quantity{{ index }}" id="quantity{{ index }}"></div>
                             <div class="col-sm-4"><strong>Cost:</strong> $<span id="cost{{ index }}"></span></div>
@@ -110,7 +123,7 @@
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                          <button type="submit" class="btn btn-primary">Confirm</button>
+                          <button type="submit" id="buy-{{ index }}" class="btn btn-primary">Confirm</button>
                         </div>
                       </form>
                     </div>
@@ -120,7 +133,7 @@
                 <script>
                   $(document).ready(function () {
                     $('#quantity{{ index }}').on('input', function () {
-                      var price = parseFloat("{{ row[3] }}");
+                      var price = parseFloat("{{ average }}");
                       var quantity = parseInt($(this).val());
                       if (isNaN(quantity)) {
                         quantity = 0;
@@ -129,10 +142,56 @@
                     });
                   });
                 </script>
+                <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+                <script>
+
+                  $(document).ready(function () {
+                    $('#buy-{{index}}').on('click', function () {
+                      var stockName = '{{ row[0] }}';
+                      var quantity = $('#quantity{{ index }}').val();
+                      var exchange = 'nyse';
+                      var cost = $('#cost{{ index }}').text();
+                      var wallet = '{{ c_wallet[0] }}';
+                      var current_date = '{{ current_date}}';
+                      console.log(stockName);
+                      console.log(quantity);
+                      // console.log(price);
+                      console.log(cost);
+                      console.log(wallet);
+                      event.preventDefault();
+                      // make an AJAX request to sell the stock
+                      $.ajax({
+                        type: 'POST',
+                        url: '/process_buy_order',
+                        data: JSON.stringify({ 'stockName': stockName, 'quantity': quantity, 'cost': cost, 'wallet': wallet, 'exchange': exchange, 'date': current_date }),
+                        contentType: 'application/json;charset=UTF-8',
+                        success: function (data) {
+                          if (data.success === 'true') {
+                            console.log("This was a success");
+                            alert("Transaction Successful");
+                            // Update UI or perform any other action for successful transaction
+                          } else {
+                            console.log("Transaction failed");
+                            alert("Transaction failed! Insufficient Wallet balance");
+                            // Update UI or perform any other action for failed transaction
+                          }
+                        },
+                        error: function () {
+                          alert('Failed to buy the stock. Please try again.');
+                        }
+                      });
+
+                    });
+
+                  });
+
+
+
+                </script>
 
 
                 |
-                
+
                 <a href="#" data-toggle="modal" data-target="#sell-modal-{{ index }}">Sell</a>
                 <div class="modal fade" id="sell-modal-{{ index }}" tabindex="-1" role="dialog"
                   aria-labelledby="myModalLabel">
@@ -143,18 +202,18 @@
                             aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="myModalLabel">Sell {{ row[0] }} Stocks</h4>
                       </div>
-                      <form action="{{ url_for('nasdaq',page=1 ) }}" method="post">
+                      <form action="{{ url_for('nyse',page=1 ) }}" method="post">
                         <div class="modal-body">
                           <div class="row">
                             <div class="col-sm-4"> <strong>Current Wallet Balance :</strong> </div>
                             <div class="col-sm-4">$ {{c_wallet[0]}} </div>
-                            
-                           
+
+
                           </div>
                           <div class="row"></div>
                           <div class="row">
 
-                            <div class="col-sm-4"><strong>Price:</strong> ${{ row[3] }}</div>
+                            <div class="col-sm-4"><strong>Price:</strong> ${{ average }}</div>
                             <div class="col-sm-4"><strong>Quantity:</strong> <input type="number" min="0"
                                 name="quantity-sell-{{ index }}" id="quantity-sell-{{ index }}"></div>
                             <div class="col-sm-4"><strong>Cost:</strong> $<span id="cost-sell-{{ index }}"></span></div>
@@ -162,7 +221,7 @@
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                          <button type="submit" class="btn btn-primary">Confirm</button>
+                          <button type="submit" id="sell-{{ index }}" class="btn btn-primary">Confirm</button>
                         </div>
                       </form>
                     </div>
@@ -172,7 +231,7 @@
                 <script>
                   $(document).ready(function () {
                     $('#quantity-sell-{{ index }}').on('input', function () {
-                      var price = parseFloat("{{ row[3] }}");
+                      var price = parseFloat("{{ average}}");
                       var quantity = parseInt($(this).val());
                       if (isNaN(quantity)) {
                         quantity = 0;
@@ -180,6 +239,52 @@
                       $('#cost-sell-{{ index }}').text((price * quantity).toFixed(2));
                     });
                   });
+                </script>
+
+                <script>
+
+                  $(document).ready(function () {
+                    $('#sell-{{index}}').on('click', function () {
+                      var stockName = '{{ row[0] }}';
+                      var quantity = $('#quantity-sell-{{ index }}').val();
+                      var exchange = 'nyse';
+                      var cost = $('#cost-sell-{{ index }}').text();
+                      var wallet = '{{ c_wallet[0] }}';
+                      var current_date = '{{ current_date}}';
+                      console.log(stockName);
+                      console.log(quantity);
+                      // console.log(price);
+                      console.log(cost);
+                      console.log(wallet);
+                      event.preventDefault();
+                      // make an AJAX request to sell the stock
+                      $.ajax({
+                        type: 'POST',
+                        url: '/process_sell_order',
+                        data: JSON.stringify({ 'stockName': stockName, 'quantity': quantity, 'cost': cost, 'wallet': wallet, 'exchange': exchange, 'date': current_date }),
+                        contentType: 'application/json;charset=UTF-8',
+                        success: function (data) {
+                          if (data.success === 'true') {
+                            console.log("This was a success");
+                            alert("Transaction Successful");
+                            // Update UI or perform any other action for successful transaction
+                          } else {
+                            console.log("Transaction failed");
+                            alert("Transaction failed! Insufficient Stocks to Sell");
+                            // Update UI or perform any other action for failed transaction
+                          }
+                        },
+                        error: function () {
+                          alert('Failed to sell the stock. Please try again.');
+                        }
+                      });
+
+                    });
+
+                  });
+
+
+
                 </script>
 
               </td>
@@ -190,62 +295,45 @@
         </table>
         <!-- Pagination -->
         <ul class="pagination">
-          <li {% if current_page==1 %} class="disabled" {% endif %}><a href="{{ url_for('nasdaq', page=1) }}">&laquo;</a></li>
-          {% if total_pages <= limit %}
-            {% for p in range(1, total_pages+1) %}
-              <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p }}</a></li>
+          <li {% if current_page==1 %} class="disabled" {% endif %}><a href="{{ url_for('nyse', page=1) }}">&laquo;</a>
+          </li>
+          {% if total_pages <= limit %} {% for p in range(1, total_pages+1) %} <li {% if current_page==p %}
+            class="active" {% endif %}><a href="{{ url_for('nyse', page=p) }}">{{ p }}</a></li>
             {% endfor %}
-          {% else %}
+            {% else %}
             {% set left_links = 3 %}
             {% set right_links = 3 %}
             {% if current_page - left_links > 1 %}
-              <li><a href="{{ url_for('nasdaq', page=1) }}">1</a></li>
-              {% if current_page - left_links > 2 %}
-                <li class="disabled"><span>...</span></li>
-              {% endif %}
+            <li><a href="{{ url_for('nyse', page=1) }}">1</a></li>
+            {% if current_page - left_links > 2 %}
+            <li class="disabled"><span>...</span></li>
+            {% endif %}
             {% endif %}
             {% set start_index = current_page - left_links %}
-            {% if start_index < 1 %}
-              {% set start_index = 1 %}
-            {% endif %}
-            {% set end_index = current_page + right_links %}
-            {% if end_index > total_pages %}
+            {% if start_index < 1 %} {% set start_index=1 %} {% endif %} {% set end_index=current_page + right_links %}
+              {% if end_index> total_pages %}
               {% set end_index = total_pages %}
-            {% endif %}
-            {% for p in range(start_index, end_index+1) %}
-              <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p }}</a></li>
-            {% endfor %}
-            {% if current_page + right_links < total_pages %}
-              {% if current_page + right_links < total_pages - 1 %}
-                <li class="disabled"><span>...</span></li>
               {% endif %}
-              <li><a href="{{ url_for('nasdaq', page=total_pages) }}">{{ total_pages }}</a></li>
-            {% endif %}
-          {% endif %}
-          <li {% if current_page==total_pages %} class="disabled" {% endif %}><a href="{{ url_for('nasdaq', page=total_pages) }}">»</a></li>
+              {% for p in range(start_index, end_index+1) %}
+              <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nyse', page=p) }}">{{ p
+                  }}</a></li>
+              {% endfor %}
+              {% if current_page + right_links < total_pages %} {% if current_page + right_links < total_pages - 1 %}
+                <li class="disabled"><span>...</span></li>
+                {% endif %}
+                <li><a href="{{ url_for('nyse', page=total_pages) }}">{{ total_pages }}</a></li>
+                {% endif %}
+                {% endif %}
+                <li {% if current_page==total_pages %} class="disabled" {% endif %}><a
+                    href="{{ url_for('nyse', page=total_pages) }}">»</a></li>
         </ul>
-        
-        
-        <!-- <ul class="pagination">
-          <li {% if current_page==1 %} class="disabled" {% endif %}><a
-              href="{{ url_for('nasdaq', page=1) }}">&laquo;</a></li>
-          {% for p in range(1, total_pages+1) %}
-          <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('nasdaq', page=p) }}">{{ p
-              }}</a></li>
-          {% endfor %}
-          <li {% if current_page==total_pages %} class="disabled" {% endif %}><a
-              href="{{ url_for('nasdaq', page=total_pages) }}">»</a></li>
-        </ul> -->
+
+
+
 
       </div>
     </div>
   </div>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <!-- Bootstrap JS -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <!-- Datepicker JS -->
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
   <script>
     // Activate the datepicker
     $('#datepicker').datepicker({
@@ -254,9 +342,6 @@
       todayHighlight: true
     });
   </script>
-
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 
 </body>
