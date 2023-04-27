@@ -1,27 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Dashboard</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body>
-    <div class="container mt-5">
-      <div class="row">
-        <div class="col-md-6 mx-auto">
-          <div class="card">
-            <div class="card-header">
-              Dashboard
-            </div>
-            <div class="card-body">
-              <h1>Welcome!</h1>
-              <p>You have successfully logged in.</p>
-              <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-            </div>
-          </div>
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Stocks App</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script> -->
+
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="{{ url_for('dashboard',page=1) }}">My Stocks App</a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
+        <div class="sidebar-nav">
+          <ul class="nav nav-pills nav-stacked">
+            <li><a href="{{ url_for('account') }}">My Account</a></li>
+            <li><a href="#" data-toggle="modal" data-target="#stock-modal">Buy/Sell Stocks</a>
+              <div class="modal fade" id="stock-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                          aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="myModalLabel">Stocks</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p>Select a stock exchange:</p>
+                      <a href="{{ url_for('nasdaq',page=1) }}"><button type="button"
+                          class="btn btn-primary">NASDAQ</button></a>
+                      <a href="{{ url_for('nyse',page=1) }}"><button type="button" class="btn btn-primary pull-right">NYSE</button></a>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li><a href="{{ url_for('transacs',page=1) }}">Transactions</a></li>
+          </ul>
         </div>
       </div>
+
+
+      <!-- Table with title -->
+      <div class="col-md-10">
+        <h2>My Portfolio</h2>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Stock Name</th>
+              <th>Stock Exchange</th>
+              <th>Quantity</th>
+              <!-- <th>Price</th> -->
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in data %}
+            <tr>
+              <td>{{ row[0] }}</td>
+              <td>{{ row[1] }}</td>
+              <td>{{ row[2] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <ul class="pagination">
+          <li {% if current_page==1 %} class="disabled" {% endif %}><a
+              href="{{ url_for('dashboard', page=1) }}">&laquo;</a></li>
+          {% for p in range(1, total_pages+1) %}
+          <li {% if current_page==p %} class="active" {% endif %}><a href="{{ url_for('dashboard', page=p) }}">{{ p
+              }}</a></li>
+          {% endfor %}
+          <li {% if current_page==total_pages %} class="disabled" {% endif %}><a
+              href="{{ url_for('dashboard', page=total_pages) }}">»</a></li>
+        </ul>
+
+      </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

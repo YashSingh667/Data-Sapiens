@@ -26,7 +26,8 @@ CREATE TABLE users (
     email varchar(50) NOT NULL,
     dob DATE NOT NULL,
     fullname varchar(50) NOT NULL,
-    wallet FLOAT DEFAULT 0.0,
+    user_role VARCHAR(50) NOT NULL DEFAULT 'user',
+    wallet FLOAT DEFAULT 0.0,    
     CONSTRAINT fk_brokerID_users
     FOREIGN KEY (brokerID)
     REFERENCES Broker_details(brokerID)
@@ -46,7 +47,7 @@ CREATE TABLE BrokerT (
 
 DROP TABLE IF EXISTS company;
 CREATE TABLE company (
-    SNo INT NOT NULL,
+    
     Stock_name varchar(50) NOT NULL,
     Exchange_name varchar(50) NOT NULL,
     cdate DATE NOT NULL,
