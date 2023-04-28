@@ -3,12 +3,14 @@ from flask import Flask, render_template, request, session, redirect, url_for, m
 import psycopg2
 import psycopg2.pool
 from datetime import datetime
+# from flask_session import Session
 
 app = Flask(__name__,template_folder='FRONT_END/')
 app.config['DEBUG'] = True
+# app.config['SESSION_TYPE'] = 'filesystem'
 app.secret_key = "mysecretkey"
 
-
+# Session(app)
 
 pool = psycopg2.pool.SimpleConnectionPool(
      minconn=1,
@@ -226,11 +228,13 @@ def nasdaq(page):
 
                 conn = pool.getconn()
                 cursor = conn.cursor()
-                cursor.execute("select wallet from users where customerID=%s;", (user_id,))
+                # cursor.execute("select wallet from users where customerID=%s;", (user_id,))
+                cursor.execute("SELECT wallet, t_date FROM users INNER JOIN (   SELECT customerID, MAX(transactionID) AS max_transactionID   FROM Orderbook  GROUP BY customerID) AS max_transactions ON users.customerID = max_transactions.customerID INNER JOIN Orderbook ON Orderbook.customerID = max_transactions.customerID AND Orderbook.transactionID = max_transactions.max_transactionID WHERE users.customerID = %s;",(user_id,))
                 wallet = cursor.fetchone()
                 cursor.close()
                 pool.putconn(conn)
-                latest_transaction_date = "To be done"
+                latest_transaction_date = wallet[1]
+                wallet = [wallet[0]]
                 resp = make_response(render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page,limit = 10,current_date = selected_date,latest_transaction_date = latest_transaction_date,c_wallet = wallet))
                 resp.set_cookie('selected_date',selected_date)
                 session['selected_date'] = selected_date
@@ -241,11 +245,13 @@ def nasdaq(page):
                 # date_param = '1970-01-02'
                 conn = pool.getconn()
                 cursor = conn.cursor()
-                cursor.execute("select wallet from users where customerID=%s;", (user_id,))
+                cursor.execute("SELECT wallet, t_date FROM users INNER JOIN (   SELECT customerID, MAX(transactionID) AS max_transactionID   FROM Orderbook  GROUP BY customerID) AS max_transactions ON users.customerID = max_transactions.customerID INNER JOIN Orderbook ON Orderbook.customerID = max_transactions.customerID AND Orderbook.transactionID = max_transactions.max_transactionID WHERE users.customerID = %s;",(user_id,))
                 wallet = cursor.fetchone()
+                # print("wallet before ",wallet)
                 cursor.close()
                 pool.putconn(conn)
-                latest_transaction_date = "To be done"
+                latest_transaction_date = wallet[1]
+                wallet = [wallet[0]]
                 data, total_pages = get_data_exchange(page,'nasdaq',selected_date)
                 return render_template('nasdaq.html', data=data, total_pages=total_pages, current_page=page,limit = 10,current_date = selected_date,latest_transaction_date = latest_transaction_date,c_wallet = wallet)
             
@@ -276,11 +282,12 @@ def nyse(page):
 
                 conn = pool.getconn()
                 cursor = conn.cursor()
-                cursor.execute("select wallet from users where customerID=%s;", (user_id,))
+                cursor.execute("SELECT wallet, t_date FROM users INNER JOIN (   SELECT customerID, MAX(transactionID) AS max_transactionID   FROM Orderbook  GROUP BY customerID) AS max_transactions ON users.customerID = max_transactions.customerID INNER JOIN Orderbook ON Orderbook.customerID = max_transactions.customerID AND Orderbook.transactionID = max_transactions.max_transactionID WHERE users.customerID = %s;",(user_id,))
                 wallet = cursor.fetchone()
                 cursor.close()
                 pool.putconn(conn)
-                latest_transaction_date = "To be done"
+                latest_transaction_date = wallet[1]
+                wallet = [wallet[0]]
                 resp = make_response(render_template('nyse.html', data=data, total_pages=total_pages, current_page=page,limit = 10,current_date = selected_date,latest_transaction_date = latest_transaction_date,c_wallet = wallet))
                 resp.set_cookie('selected_date',selected_date)
                 session['selected_date'] = selected_date
@@ -291,11 +298,12 @@ def nyse(page):
                 # date_param = '1970-01-02'
                 conn = pool.getconn()
                 cursor = conn.cursor()
-                cursor.execute("select wallet from users where customerID=%s;", (user_id,))
+                cursor.execute("SELECT wallet, t_date FROM users INNER JOIN (   SELECT customerID, MAX(transactionID) AS max_transactionID   FROM Orderbook  GROUP BY customerID) AS max_transactions ON users.customerID = max_transactions.customerID INNER JOIN Orderbook ON Orderbook.customerID = max_transactions.customerID AND Orderbook.transactionID = max_transactions.max_transactionID WHERE users.customerID = %s;",(user_id,))
                 wallet = cursor.fetchone()
                 cursor.close()
                 pool.putconn(conn)
-                latest_transaction_date = "To be done"
+                latest_transaction_date = wallet[1]
+                wallet = [wallet[0]]
                 data, total_pages = get_data_exchange(page,'nyse',selected_date)
                 return render_template('nyse.html', data=data, total_pages=total_pages, current_page=page,limit = 10,current_date = selected_date,latest_transaction_date = latest_transaction_date,c_wallet = wallet)
             
