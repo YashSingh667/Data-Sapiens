@@ -108,7 +108,7 @@ def get_data_transacs(page,userid):
     # Write a SQL query to fetch the data with pagination
     # sql_query = f"SELECT * FROM orderbook LIMIT {limit} OFFSET {offset}"
 
-    sql_query = f"select t_date, transactionID, stock_name, Exchange_name,stockvolume, stockprice from Orderbook join stockexchange on stockexchange.exchangebrokerID = Orderbook.exchangebrokerID where customerID = {userid} order by t_date desc LIMIT {limit} OFFSET {offset};"
+    sql_query = f"select t_date, transactionID, stock_name, Exchange_name,stockvolume, stockprice from Orderbook join stockexchange on stockexchange.exchangebrokerID = Orderbook.exchangebrokerID where customerID = {userid} order by transactionID desc LIMIT {limit} OFFSET {offset};"
 
     # Execute the query using psycopg2
     # cursor = conn.cursor()
