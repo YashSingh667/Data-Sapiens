@@ -36,7 +36,8 @@
         </div>
         <div class="col-sm-6">
           <h4>Wallet Balance</h4>
-          <p>$ {{data[8]}}</p>
+          <p>$ {{ data[8]|round(2) }}</p>
+
           <form method="POST" action="{{ url_for('account') }}">
             <div class="form-group">
               <label for="wallet-balance">Update Wallet Balance</label>
