@@ -1,0 +1,4 @@
+git clone https://github.com/YashSingh667/Data-Sapiens.git
+
+Using SSH 
+git clone git@github.com:YashSingh667/Data-Sapiens.git
