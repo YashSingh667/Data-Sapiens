@@ -40,10 +40,13 @@
 
           <form method="POST" action="{{ url_for('account') }}">
             <div class="form-group">
-              <label for="wallet-balance">Update Wallet Balance</label>
+              <label for="wallet-balance"><strong>Update Wallet Balance</strong> </label>
               <input type="number"  min = 0 class="form-control" id="wallet-balance" name="wallet-balance" required>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
+            <button type="submit" class="btn btn-primary" name="action" value="update">Add</button>
+            <button type="submit" class="btn btn-danger" name="action" value="withdraw">Withdraw</button>
+
           </form>
         </div>
       </div>
