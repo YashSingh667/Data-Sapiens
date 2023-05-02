@@ -71,7 +71,7 @@
         
           <div class="sidebar-nav">
             <ul class="nav nav-pills nav-stacked">
-              <li>Last Transaction Date : {{latest_transaction_date}}</li>
+              <li>Last Transaction Date : {{ latest_transaction_date[0] }}</li>
               <li><a href="{{ url_for('account') }}">My Account</a></li>
               
               <li><a href="{{ url_for('dashboard',page=1) }}">Portfolio</a></li>
@@ -82,7 +82,7 @@
 
       <!-- Table with title -->
       <div class="col-md-10">
-        <h2>Listed Stocks on NYSE : {{current_date}}</h2>
+        <h2>Listed Stocks on NYSE : {{current_date}} </h2>
         <table class="table table-striped">
           <thead>
             <tr>
